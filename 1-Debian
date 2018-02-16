@@ -1,0 +1,40 @@
+#! /bin/bash
+
+setupTimezone(){
+    ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+    dpkg-reconfigure -f noninteractive tzdata
+}
+
+setupSysctl(){
+    cat > /etc/sysctl.d/98-vps-sysctl.conf <<-EOF
+	net.ipv4.ip_forward=1
+	net.core.default_qdisc=fq
+	net.ipv4.tcp_congestion_control=bbr
+	EOF
+}
+
+installLastKernel(){
+    apt -qq update
+    apt -qq -y install -t $(lsb_release -sc)-backports linux-image-amd64
+}
+
+setupBash(){
+    if ! $(grep -q HISTCONTROL ~/.bashrc)
+    then
+        cat >> ~/.bashrc <<-EOF
+
+		# don't put duplicate lines or lines starting with space in the history.
+		# See bash(1) for more options
+		HISTCONTROL=ignoreboth
+		EOF
+    fi
+}
+
+main(){
+    setupTimezone
+    setupSysctl
+    installLastKernel
+    setupBash
+}
+
+main

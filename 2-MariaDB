@@ -1,0 +1,48 @@
+#! /bin/bash
+
+installSoftware(){
+    apt -qq -y install dirmngr
+    apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xF1656F24C74CD1D8
+    cat >> /etc/apt/sources.list.d/mariadb.list <<-EOF
+	deb http://ftp.yz.yamagata-u.ac.jp/pub/dbms/mariadb/repo/10.2/debian $(lsb_release -sc) main
+	deb-src http://ftp.yz.yamagata-u.ac.jp/pub/dbms/mariadb/repo/10.2/debian $(lsb_release -sc) main
+	EOF
+    apt -qq update
+    echo mariadb-server-10.2 mysql-server/root_password password $db_pass|debconf-set-selections
+    echo mariadb-server-10.2 mysql-server/root_password_again password $db_pass|debconf-set-selections
+    apt -qq -y install mariadb-server-10.2
+    echo RESET mysql-server/root_password|debconf-communicate mariadb-server-10.2
+    echo RESET mysql-server/root_password_again|debconf-communicate mariadb-server-10.2
+}
+
+writeConfig(){
+   cat > /etc/mysql/mariadb.conf.d/98-vps.cnf <<-EOF
+	[mysqld]
+
+	bind-address		= 0.0.0.0
+	port			= $db_port
+	server-id		= $(date +%Y%m%d)
+	EOF
+}
+
+main(){
+    while true
+    do
+        read -p 'Please enter new database port:' db_port
+        [ $db_port -ge 1 -a $db_port -le 65535 ] 2>/dev/null && break
+        echo Port number must be in the range from 1 to 65535!
+    done
+    while true
+    do
+        read -sp 'Please enter new database password:' db_pass
+        echo
+        read -sp 'Retype new database password:' db_pass_confirm
+        echo
+        [ $db_pass = $db_pass_confirm ] && break
+        echo Sorry, passwords do not match, please try again!
+    done
+    installSoftware
+    writeConfig
+}
+
+main

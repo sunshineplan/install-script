@@ -1,0 +1,21 @@
+#! /bin/bash
+
+installSoftware(){
+    apt -qq -y install bind9
+}
+
+writeConfigFile(){
+    sed -i '/named.conf.default-zones/s/^/\/\//' /etc/bind/named.conf
+
+    sed -i '/^};$/i\
+	\n\trecursion no;\
+	allow-transfer { none; };\
+	rate-limit { responses-per-second 15; window 5; };\n' /etc/bind/named.conf.options
+}
+
+main(){
+    installSoftware
+    writeConfigFile
+}
+
+main

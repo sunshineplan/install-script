@@ -1,0 +1,26 @@
+#! /bin/bash
+
+main(){
+    while true
+    do
+        read -p 'Please enter new ssh port:' ssh_port
+        [ $ssh_port -ge 1 -a $ssh_port -le 65535 ] 2>/dev/null && break
+        echo Port number must be in the range from 1 to 65535!
+    done
+    while true
+    do
+        read -sp 'Please enter new root password:' pass
+        echo
+        read -sp 'Retype new root password:' pass_confirm
+        echo
+        [ $pass = $pass_confirm ] && break
+        echo Sorry, passwords do not match, please try again!
+    done
+    sudo sed -i '/^PermitRootLogin/s/no/yes/' /etc/ssh/sshd_config
+    sudo sed -i '/^PasswordAuthentication/s/no/yes/' /etc/ssh/sshd_config
+    sudo sed -i "/^#\?Port/s/.*/Port $ssh_port/" /etc/ssh/sshd_config
+    echo root:$pass|sudo chpasswd
+    sudo service ssh restart
+}
+
+main
