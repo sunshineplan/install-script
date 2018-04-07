@@ -11,6 +11,7 @@ main(){
     do
         read -sp 'Please enter new root password:' pass
         echo
+        [ -z $pass ] && echo No password supplied && continue
         read -sp 'Retype new root password:' pass_confirm
         echo
         [ $pass = $pass_confirm ] && break

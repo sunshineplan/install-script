@@ -36,6 +36,7 @@ main(){
     do
         read -sp 'Please enter new database password:' db_pass
         echo
+        [ -z $db_pass ] && echo No password supplied && continue
         read -sp 'Retype new database password:' db_pass_confirm
         echo
         [ $db_pass = $db_pass_confirm ] && break
