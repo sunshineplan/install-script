@@ -14,7 +14,7 @@ main(){
         [ -z $pass ] && echo No password supplied && continue
         read -sp 'Retype new root password:' pass_confirm
         echo
-        [ $pass = $pass_confirm ] && break
+        [ $pass = $pass_confirm ] 2>/dev/null && break
         echo Sorry, passwords do not match, please try again!
     done
     sudo sed -i '/^PermitRootLogin/s/no/yes/' /etc/ssh/sshd_config

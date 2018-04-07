@@ -39,7 +39,7 @@ main(){
         [ -z $db_pass ] && echo No password supplied && continue
         read -sp 'Retype new database password:' db_pass_confirm
         echo
-        [ $db_pass = $db_pass_confirm ] && break
+        [ $db_pass = $db_pass_confirm ] 2>/dev/null && break
         echo Sorry, passwords do not match, please try again!
     done
     installSoftware
