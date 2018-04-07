@@ -1,0 +1,71 @@
+#! /bin/bash
+
+installSoftware(){
+    apt -qq -y install -t $(lsb_release -sc)-backports certbot
+    apt -qq -y install python3-pip
+    pip3 install dns-lexicon
+}
+
+writeConfigFile(){
+    cat >> /etc/letsencrypt/cli.ini <<-EOF
+
+	authenticator = manual
+	manual-public-ip-logging-ok = True
+	server = https://acme-v02.api.letsencrypt.org/directory
+	preferred-challenges = dns
+	EOF
+}
+
+writeAuthScript(){
+    cat > /etc/letsencrypt/$script_name <<-EOF
+	#!/usr/bin/env bash
+
+	set -euf -o pipefail
+
+	PROVIDER="$provider"
+	PROVIDER_CREDENTIALS="--auth-token=$api_key"
+	PROVIDER_UPDATE_DELAY=30
+
+	function auth {
+	    lexicon "\${PROVIDER}" "\${PROVIDER_CREDENTIALS}" \\
+	    create "\${CERTBOT_DOMAIN}" TXT --name "_acme-challenge.\${CERTBOT_DOMAIN}" --content "\${CERTBOT_VALIDATION}"
+
+	    sleep "\${PROVIDER_UPDATE_DELAY}"
+	}
+
+	function cleanup {
+	    lexicon "\${PROVIDER}" "\${PROVIDER_CREDENTIALS}" \\
+	    delete "\${CERTBOT_DOMAIN}" TXT --name "_acme-challenge.\${CERTBOT_DOMAIN}" --content "\${CERTBOT_VALIDATION}"
+	}
+
+	HANDLER=\$1; shift;
+	if [ -n "\$(type -t \$HANDLER)" ] && [ "\$(type -t \$HANDLER)" = function ]; then
+	  \$HANDLER "\$@"
+	fi
+	EOF
+    chmod +x /etc/letsencrypt/$script_name
+}
+
+runCertbot(){
+    certbot register --agree-tos --no-eff-email -m $email
+    certbot certonly --cert-name $domain -d $domain,*.$domain --manual-auth-hook "/etc/letsencrypt/$script_name auth" --manual-cleanup-hook "/etc/letsencrypt/$script_name cleanup"
+}
+
+main(){
+    read -p "Please enter your email(register Let's Encrypt ACME account):" email
+    read -p 'Please enter your domain:' domain
+    read -p 'Please enter your domain provider:' provider
+    read -p 'Please enter your api key:' api_key
+    script_name="lexicon-$provider"
+    if [ -z "$provider" ] ; then
+        script_name="lexicon"
+    fi
+    installSoftware >/dev/null 2>&1
+    writeConfigFile
+    writeAuthScript
+    if [ -n "$email" ] && [ -n "$domain" ] && [ -n "$provider" ] && [ -n "$api_key" ] ; then
+        runCertbot
+    fi
+}
+
+main
