@@ -2,17 +2,16 @@
 
 installSoftware(){
     cat >> /etc/apt/sources.list.d/nginx.list <<-EOF
-	deb http://nginx.org/packages/debian/ $(lsb_release -sc) nginx
-	deb-src http://nginx.org/packages/debian/ $(lsb_release -sc) nginx
 	deb http://packages.amplify.nginx.com/debian/ $(lsb_release -sc) amplify-agent
 	EOF
     curl http://nginx.org/keys/nginx_signing.key|apt-key add -
     apt -qq update
     apt -qq -y install nginx nginx-amplify-agent
+    apt -qq -y install -t $(lsb_release -sc)-backports nginx
 }
 
 setupAmplify(){
-    cat > /etc/nginx/conf.d/nginx_amplify.conf <<-EOF
+    cat > /etc/nginx/sites-available/nginx_amplify.conf <<-EOF
 	server {
 	    server_name 127.0.0.1;
 	    location /nginx_status {
@@ -23,6 +22,7 @@ setupAmplify(){
 	    }
 	}
 	EOF
+    ln -fs /etc/nginx/sites-available/nginx_amplify.conf /etc/nginx/sites-enabled
 }
 
 main(){
