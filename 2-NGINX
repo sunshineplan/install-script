@@ -11,7 +11,7 @@ installSoftware(){
 }
 
 setupAmplify(){
-    cat > /etc/nginx/sites-available/nginx_amplify.conf <<-EOF
+    cat > /etc/nginx/conf.d/nginx_amplify.conf <<-EOF
 	server {
 	    server_name 127.0.0.1;
 	    location /nginx_status {
@@ -22,7 +22,6 @@ setupAmplify(){
 	    }
 	}
 	EOF
-    ln -fs /etc/nginx/sites-available/nginx_amplify.conf /etc/nginx/sites-enabled
 }
 
 main(){
