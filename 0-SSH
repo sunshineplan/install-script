@@ -3,7 +3,8 @@
 main(){
     while true
     do
-        read -p 'Please enter new ssh port:' ssh_port
+        read -p 'Please enter new ssh port(default:22):' ssh_port
+        [ -z $ssh_port ] && ssh_port=22 && break
         [ $ssh_port -ge 1 -a $ssh_port -le 65535 ] 2>/dev/null && break
         echo Port number must be in the range from 1 to 65535!
     done
