@@ -1,9 +1,7 @@
 #! /bin/bash
 
 installSoftware(){
-    apt -qq -y install -t $(lsb_release -sc)-backports certbot
-    apt -qq -y install python3-pip
-    pip3 install dns-lexicon
+    apt -qq -y install certbot lexicon
 }
 
 writeConfigFile(){
@@ -47,25 +45,23 @@ writeAuthScript(){
 }
 
 runCertbot(){
-    certbot register --agree-tos --no-eff-email -m $email
-    certbot certonly --cert-name $domain -d $domain,*.$domain --manual-auth-hook "/etc/letsencrypt/$script_name auth" --manual-cleanup-hook "/etc/letsencrypt/$script_name cleanup"
+    certbot register --agree-tos --no-eff-email --register-unsafely-without-email
+    #certbot certonly --cert-name $cert-name -d $domain,*.$domain --manual-auth-hook "/etc/letsencrypt/$script_name auth" --manual-cleanup-hook "/etc/letsencrypt/$script_name cleanup"
 }
 
 main(){
-    read -p "Please enter your email(register Let's Encrypt ACME account):" email
-    read -p 'Please enter your domain:' domain
+    #read -p 'Please enter your domain:' domain
     read -p 'Please enter your domain provider:' provider
     read -p 'Please enter your api key:' api_key
     script_name="lexicon-$provider"
-    if [ -z "$provider" ] ; then
+    if [ -z "$provider" ]
+    then
         script_name="lexicon"
     fi
     installSoftware >/dev/null 2>&1
     writeConfigFile
     writeAuthScript
-    if [ -n "$email" ] && [ -n "$domain" ] && [ -n "$provider" ] && [ -n "$api_key" ] ; then
-        runCertbot
-    fi
+    runCertbot >/dev/null 2>&1
 }
 
 main
