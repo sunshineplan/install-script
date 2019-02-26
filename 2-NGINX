@@ -7,10 +7,11 @@ installSoftware(){
     curl http://nginx.org/keys/nginx_signing.key|apt-key add -
     apt -qq update
     apt -qq -y install nginx nginx-amplify-agent
-    apt -qq -y install -t $(lsb_release -sc)-backports nginx
 }
 
 setupAmplify(){
+    sed "s/api_key.*$/api_key = $api_key/" /etc/amplify-agent/agent.conf.default > /etc/amplify-agent/agent.conf
+    #sed -i 's/mysql = False/mysql = True/' /etc/amplify-agent/agent.conf
     cat > /etc/nginx/conf.d/nginx_amplify.conf <<-EOF
 	server {
 	    server_name 127.0.0.1;
@@ -25,7 +26,8 @@ setupAmplify(){
 }
 
 main(){
-    installSoftware
+    read -p 'Please enter your amplify api key:' api_key
+    installSoftware >/dev/null 2>&1
     setupAmplify
 }
 
