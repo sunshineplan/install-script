@@ -4,15 +4,15 @@ installSoftware(){
     apt -qq -y install dirmngr
     apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xF1656F24C74CD1D8
     cat >> /etc/apt/sources.list.d/mariadb.list <<-EOF
-	deb http://ftp.yz.yamagata-u.ac.jp/pub/dbms/mariadb/repo/10.2/debian $(lsb_release -sc) main
-	deb-src http://ftp.yz.yamagata-u.ac.jp/pub/dbms/mariadb/repo/10.2/debian $(lsb_release -sc) main
+	deb http://ftp.yz.yamagata-u.ac.jp/pub/dbms/mariadb/repo/$ver/debian $(lsb_release -sc) main
+	deb-src http://ftp.yz.yamagata-u.ac.jp/pub/dbms/mariadb/repo/$ver/debian $(lsb_release -sc) main
 	EOF
     apt -qq update
-    echo mariadb-server-10.2 mysql-server/root_password password $db_pass|debconf-set-selections
-    echo mariadb-server-10.2 mysql-server/root_password_again password $db_pass|debconf-set-selections
-    apt -qq -y install mariadb-server-10.2
-    echo RESET mysql-server/root_password|debconf-communicate mariadb-server-10.2
-    echo RESET mysql-server/root_password_again|debconf-communicate mariadb-server-10.2
+    echo mariadb-server-$ver mysql-server/root_password password $db_pass|debconf-set-selections
+    echo mariadb-server-$ver mysql-server/root_password_again password $db_pass|debconf-set-selections
+    apt -qq -y install mariadb-server
+    echo RESET mysql-server/root_password|debconf-communicate mariadb-server-$ver
+    echo RESET mysql-server/root_password_again|debconf-communicate mariadb-server-$ver
 }
 
 writeConfig(){
@@ -26,6 +26,7 @@ writeConfig(){
 }
 
 main(){
+    read -p 'Please enter MariaDB version:' ver
     while true
     do
         read -p 'Please enter new database port:' db_port
@@ -42,7 +43,7 @@ main(){
         [ $db_pass = $db_pass_confirm ] 2>/dev/null && break
         echo Sorry, passwords do not match, please try again!
     done
-    installSoftware
+    installSoftware >/dev/null 2>&1
     writeConfig
 }
 
