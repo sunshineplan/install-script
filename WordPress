@@ -1,0 +1,67 @@
+#! /bin/bash
+
+installSoftware(){
+    apt -qq -y install nginx php$ver-fpm php$ver-mysql
+    mkdir -p /var/www
+    curl -o- https://wordpress.org/latest.tar.gz | tar zxC /var/www
+    chown -R www-data:www-data /var/www/wordpress
+}
+
+configMySQL(){
+    Q1="DROP DATABASE IF EXISTS $database_name;"
+    Q2="CREATE DATABASE $database_name;"
+    Q3="GRANT ALL PRIVILEGES ON $database_name.* TO '$username'@'localhost' IDENTIFIED BY '$password';"
+    SQL="${Q1}${Q2}${Q3}"
+    mysql -p$db_pass -e "$SQL"
+}
+
+writeConfig(){
+    cp /var/www/wordpress/wp-config-sample.php /var/www/wordpress/wp-config.php
+    sed "s/database_name_here/$database_name/" -i /var/www/wordpress/wp-config.php
+    sed "s/username_here/$username/" -i /var/www/wordpress/wp-config.php
+    sed "s/password_here/$password/" -i /var/www/wordpress/wp-config.php
+    sed '/put your unique phrase here/d' -i /var/www/wordpress/wp-config.php
+    sed '/#@-/{e curl -s https://api.wordpress.org/secret-key/1.1/salt
+    }' -i /var/www/wordpress/wp-config.php
+    cat > /etc/nginx/conf.d/wordpress.conf <<-EOF
+	server {
+	    listen 80;
+	    server_name $domain;
+	    root /var/www/wordpress;
+	    index  index.php;
+
+	    location = /favicon.ico {
+	        log_not_found off;
+	        access_log off;
+	    }
+
+	    location / {
+	        # This is cool because no php is touched for static content.
+	        # include the "?\$args" part so non-default permalinks doesn't break when using query string
+	        try_files \$uri \$uri/ /index.php?\$args;
+	    }
+
+	    location ~ \.php\$ {
+	        fastcgi_pass   unix:/run/php/php$ver-fpm.sock;
+	        fastcgi_index  index.php;
+	        fastcgi_param  SCRIPT_FILENAME    \$document_root\$fastcgi_script_name;
+	        include        fastcgi_params;
+	    }
+	}
+	EOF
+}
+
+main(){
+    read -p 'Please enter your domain:' domain
+    read -p 'Please enter php version:' ver
+    read -p 'Please enter local database password:' db_pass
+    database_name=wordpress$(date +%Y%m%d)
+    username=wordpress
+    password=wordpress
+    installSoftware >/dev/null 2>&1
+    configMySQL
+    writeConfig
+    service nginx restart
+}
+
+main
