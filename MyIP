@@ -1,0 +1,73 @@
+#! /bin/bash
+
+installSoftware(){
+    apt -qq -y install python3-flask uwsgi-plugin-python3 nginx
+}
+
+installMyIP(){
+    mkdir -p /var/www/MyIP
+    cat >/var/www/MyIP/MyIP.py <<-EOF
+	from flask import Flask, request
+	app = Flask(__name__)
+	@app.route('/')
+	def index():
+	    myip = request.remote_addr
+	    return f'<title>My IP: {myip}</title><style>.ip{{border:1px solid #cbcbcb;background:#f2f2f2;font-size:36px;padding:6px;}}</style><h1>My IP:</h1><code class="ip">{myip}</code>'
+	if __name__ == '__main__':
+	    app.run()
+	EOF
+}
+
+setupsystemd(){
+    cat >/var/www/MyIP/MyIP.ini <<-EOF
+	[uwsgi]
+	plugin = python3
+	pythonpath = /var/www/%n
+	module = %n:app
+
+	socket = /var/www/%n/%n.sock
+	chmod-socket = 666
+	vacuum = true
+	EOF
+
+    cat >/etc/systemd/system/myip.service <<-EOF
+	[Unit]
+	Description=uWSGI instance to serve My IP
+	After=network.target
+
+	[Service]
+	ExecStart=/usr/bin/uwsgi --ini /var/www/MyIP/MyIP.ini
+
+	[Install]
+	WantedBy=multi-user.target
+	EOF
+    
+    systemctl enable myip
+    service myip start
+}
+
+setupNGINX(){
+    cat > /etc/nginx/conf.d/MyIP.conf <<-EOF
+	server {
+	    listen 80;
+	    server_name $domain;
+
+	    location / {
+	        include uwsgi_params;
+	        uwsgi_pass unix:/var/www/MyIP/MyIP.sock;
+	    }
+	}
+	EOF
+
+    service nginx restart
+}
+
+main(){
+    read -p 'Please enter domain:' domain
+    installSoftware >/dev/null 2>&1
+    installMyIP >/dev/null 2>&1
+    setupsystemd >/dev/null 2>&1
+    setupNGINX
+}
+
+main
