@@ -18,7 +18,7 @@ main(){
         [ $pass = $pass_confirm ] 2>/dev/null && break
         echo Sorry, passwords do not match, please try again!
     done
-    sudo sed -i '/^PermitRootLogin/s/prohibit-password/yes/' /etc/ssh/sshd_config
+    sudo sed -i '/PermitRootLogin/s/.*/PermitRootLogin yes/' /etc/ssh/sshd_config
     sudo sed -i '/^PasswordAuthentication/s/no/yes/' /etc/ssh/sshd_config
     sudo sed -i "/^#\?Port/s/.*/Port $ssh_port/" /etc/ssh/sshd_config
     echo root:$pass|sudo chpasswd
