@@ -8,11 +8,13 @@ installSoftware(){
 	deb-src http://ftp.yz.yamagata-u.ac.jp/pub/dbms/mariadb/repo/$ver/debian $(lsb_release -sc) main
 	EOF
     apt -qq update
-    echo mariadb-server-$ver mysql-server/root_password password $db_pass|debconf-set-selections
-    echo mariadb-server-$ver mysql-server/root_password_again password $db_pass|debconf-set-selections
     apt -qq -y install mariadb-server
-    echo RESET mysql-server/root_password|debconf-communicate mariadb-server-$ver
-    echo RESET mysql-server/root_password_again|debconf-communicate mariadb-server-$ver
+}
+
+setPassword(){
+    Q1="SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$db_pass');"
+    SQL="${Q1}"
+    mysql -e "$SQL"
 }
 
 writeConfig(){
@@ -44,6 +46,7 @@ main(){
         echo Sorry, passwords do not match, please try again!
     done
     installSoftware >/dev/null 2>&1
+    setPassword
     writeConfig
 }
 
