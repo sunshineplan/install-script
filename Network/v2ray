@@ -2,10 +2,10 @@
 
 API="https://api.github.com/repos/v2ray/v2ray-core/releases/latest"
 DIR="/home/"
-CONFIG="config.json"
 REMOTE="example.com"
 REMOTE_USER="user"
 REMOTE_DIR="/home/"
+CONFIG="config.json"
 COPY_EXEC=1
 DOWNLOAD_URL="https://raw.githubusercontent.com/v2ray/v2ray-core/master/release/install-release.sh"
 CUR_VER=""
