@@ -1,0 +1,111 @@
+#!/bin/bash
+
+API="https://api.github.com/repos/geph-official/gephng-binaries/commits"
+EXEC="geph"
+DIR="/home/"
+REMOTE="example.com"
+REMOTE_USER="user"
+REMOTE_DIR="/home/"
+CONFIG="client.conf"
+COPY_EXEC=1
+DOWNLOAD_URL=""
+CUR_VER=""
+NEW_VER=""
+
+LOCATION=""
+if [ $# -eq 0 ]; then
+    LOCATION="us"
+else
+    LOCATION=$1
+fi
+
+getDownloadURL() {
+    SHA=$(curl $API -s | python3 -c "import sys, json;print(json.load(sys.stdin)[0]['sha'])")
+    FILES=$(curl $API/$SHA -s | python3 -c "import sys,json;files=[f['raw_url'] for f in json.load(sys.stdin)['files']];print('\n'.join(files))")
+    DOWNLOAD_URL=$(echo "$FILES" | grep "geph-client-linux-amd64")
+}
+
+# 1: new version. 0: no.
+checkVersion() {
+    NEW_VER=$(echo $DOWNLOAD_URL | cut -dv -f2)
+    if [ ! -f "${DIR}geph_version" ]; then
+        echo Failed to get current version.
+        return 1
+    fi
+    CUR_VER=$(cat ${DIR}geph_version)
+    if [ $NEW_VER == $CUR_VER ]; then
+        echo No new version.
+        COPY_EXEC=0
+        return 0
+    fi
+    echo New version found.
+    return 1
+}
+
+downloadGeph() {
+    echo -e "\033[32mDownloading v$NEW_VER\033[0m"
+    curl -Lo ${DIR}geph $DOWNLOAD_URL && echo $NEW_VER >${DIR}geph_version || return $?
+}
+
+getConfig() {
+    cp ${DIR}${CONFIG} ${DIR}${CONFIG}.remote
+    case $LOCATION in
+    us) ;;
+
+    ca)
+        echo "exitName = ca-mtl-01.exits.geph.io" >>${DIR}${CONFIG}.remote
+        echo "exitKey = 8d848fe736ead2f0b78cd13e81293944936fe840ea449b8f87438340ecdaaaf6" >>${DIR}${CONFIG}.remote
+        ;;
+    ch)
+        echo "exitName = ch-gva-01.exits.geph.io" >>${DIR}${CONFIG}.remote
+        echo "exitKey = c1b74b5d47286d97dd6a56ec574488775210ca7e44da506c011b17764660a34a" >>${DIR}${CONFIG}.remote
+        ;;
+    hk)
+        echo "exitName = hk-hkg-01.exits.geph.io" >>${DIR}${CONFIG}.remote
+        echo "exitKey = 816802fd21f8689897c2abf33a95db23cc2a8d4f5cb996a29a3d85a4919c86b8" >>${DIR}${CONFIG}.remote
+        ;;
+    jp)
+        echo "exitName = jp-tyo-01.exits.geph.io" >>${DIR}${CONFIG}.remote
+        echo "exitKey = 107b64be61eef80a863362b84c7ebc730f81e903697c6e632f2908a62a60163d" >>${DIR}${CONFIG}.remote
+        ;;
+    sg)
+        echo "exitName = sg-sgp-01.exits.geph.io" >>${DIR}${CONFIG}.remote
+        echo "exitKey = 2f1d296bcc56cdd84e7276ebea91f131d64a4021a385ee0f6f0ecbdffe8b2342" >>${DIR}${CONFIG}.remote
+        ;;
+    *)
+        echo "Unknow location."
+        ;;
+    esac
+}
+
+remoteStart() {
+    ssh $REMOTE_USER@$REMOTE "service $EXEC stop;sleep 1"
+    if [ $? -ne 0 ]; then
+        return $?
+    fi
+    if [ $COPY_EXEC -eq 1 ]; then
+        scp -p ${DIR}geph $REMOTE_USER@$REMOTE:/usr/bin/$EXEC
+    fi
+    scp -p ${DIR}${CONFIG}.remote $REMOTE_USER@$REMOTE:${REMOTE_DIR}client.conf
+    ssh $REMOTE_USER@$REMOTE "chmod +x /usr/bin/$EXEC;service $EXEC start;sleep 1;rm ${REMOTE_DIR}client.conf"
+    RETVAL=$?
+    rm ${DIR}${CONFIG}.remote
+    return $RETVAL
+}
+
+main() {
+    getDownloadURL
+    checkVersion
+    if [ $? -eq 1 ]; then
+        downloadGeph
+    fi
+    getConfig
+    remoteStart
+    if [ $? -eq 0 ]; then
+        echo Done.
+    else
+        echo Failed.
+    fi
+}
+
+main
