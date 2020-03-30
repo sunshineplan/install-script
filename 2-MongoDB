@@ -1,0 +1,51 @@
+#! /bin/bash
+
+installSoftware(){
+    curl https://www.mongodb.org/static/pgp/server-4.2.asc | apt-key add -
+    cat >> /etc/apt/sources.list.d/mongodb.list <<-EOF
+	deb http://repo.mongodb.org/apt/debian $(lsb_release -sc)/mongodb-org/4.2 main
+	EOF
+    apt -qq update
+    apt -qq -y install mongodb-org
+    service mongod start
+    sleep 3
+    systemctl enable mongod
+}
+
+addUser(){
+    mongo admin <<-EOF
+	db.createUser({user:'root', pwd:'$db_pass', roles:['root'], authenticationRestrictions:[{clientSource: ['127.0.0.1']}]})
+	db.createUser({user:'sunshine', pwd:'$db_pass', roles:['readWriteAnyDatabase']})
+	EOF
+}
+
+writeConfig(){
+    sed -i "/port:/s/.*/  port: $db_port/" /etc/mongod.conf
+    sed -i '/bindIp:/s/.*/  bindIp: 0.0.0.0/' /etc/mongod.conf
+    sed -i '/security:/s/.*/security:\n  authorization: enabled/' /etc/mongod.conf
+}
+
+main(){
+    while true
+    do
+        read -p 'Please enter new database port:' db_port
+        [ $db_port -ge 1 -a $db_port -le 65535 ] 2>/dev/null && break
+        echo Port number must be in the range from 1 to 65535!
+    done
+    while true
+    do
+        read -sp 'Please enter new database password:' db_pass
+        echo
+        [ -z $db_pass ] && echo No password supplied && continue
+        read -sp 'Retype new database password:' db_pass_confirm
+        echo
+        [ $db_pass = $db_pass_confirm ] 2>/dev/null && break
+        echo Sorry, passwords do not match, please try again!
+    done
+    installSoftware
+    addUser
+    writeConfig
+    service mongod restart
+}
+
+main
