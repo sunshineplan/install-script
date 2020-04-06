@@ -3,7 +3,7 @@
 from csv import DictReader
 from io import BytesIO
 from subprocess import Popen, check_call, check_output
-from time import time
+from time import sleep, time
 
 import requests
 from click import pause
@@ -83,6 +83,7 @@ def shutdown():
         if 'geph' in t['Image Name']:
             print('Shutting down Geph service.')
             check_call('taskkill /f /pid '+t['PID'])
+            sleep(1)
             return 1
     return 0
 
