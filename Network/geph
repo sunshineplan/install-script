@@ -43,7 +43,7 @@ checkVersion() {
 }
 
 downloadGeph() {
-    echo -e "\033[32mDownloading v$NEW_VER\033[0m"
+    echo -e "Downloading v$NEW_VER"
     curl -Lo ${DIR}geph $DOWNLOAD_URL && echo $NEW_VER >${DIR}geph_version || return $?
 }
 

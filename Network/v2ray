@@ -36,7 +36,7 @@ checkVersion() {
 }
 
 downloadV2ray() {
-    echo -e "\033[32mDownloading $NEW_VER\033[0m"
+    echo -e "Downloading $NEW_VER"
     curl -Lo ${DIR}install-release.sh $DOWNLOAD_URL
     scp -p ${DIR}install-release.sh $REMOTE_USER@$REMOTE:$REMOTE_DIR
 }
