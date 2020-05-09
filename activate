@@ -1,0 +1,100 @@
+@echo off
+cls
+icacls "%SystemDrive%\System Volume Information" >nul 2>nul || (echo Set RequestUAC=CreateObject^("Shell.Application"^):RequestUAC.ShellExecute "%~s0","","","runas",1:Set DeleteVBS=CreateObject^("Scripting.FileSystemObject"^):DeleteVBS.DeleteFile WScript.ScriptFullName:WScript.Quit >%temp%\getadmin.vbs & %temp%\getadmin.vbs & exit)
+SET ORIGINAL=%CD%
+echo =====================================
+echo Activating MS Products
+echo =====================================
+rem https://docs.microsoft.com/en-us/deployoffice/vlactivation/gvlks
+rem https://technet.microsoft.com/en-us/library/jj612867.aspx
+echo.
+echo Activating Office ...
+if exist "%ProgramFiles%\Microsoft Office\Office16\ospp.vbs" cd /d "%ProgramFiles%\Microsoft Office\Office16"
+if exist "%ProgramFiles(x86)%\Microsoft Office\Office16\ospp.vbs" cd /d "%ProgramFiles(x86)%\Microsoft Office\Office16"
+if not exist ospp.vbs goto office_notinstalled
+cscript ospp.vbs /inpkey:XQNVK-8JYDB-WJ9W3-YJ8YR-WFG99 | find /i "success" >nul && goto office_2016 || goto office_2019
+:office_2016
+set office=Office 2016
+echo Product Name: Office 2016
+goto office_activate
+:office_2019
+set office=Office 2019
+echo Product Name: Office 2019
+for /f %%i in ('dir /b ..\root\Licenses16\ProPlus2019VL*.xrm-ms') do cscript ospp.vbs /inslic:"..\root\Licenses16\%%i" >nul
+cscript ospp.vbs /inpkey:NMMKJ-6RK4F-KMJVX-8D9MJ-6MWKP | find /i "success" >nul || goto office_failed
+goto office_activate
+:office_activate
+set i=1
+:office_server
+if %i%==1 (set KMS_Sev=kms1.server&set KMS_Port=1688)
+if %i%==2 (set KMS_Sev=kms2.server&set KMS_Port=1688)
+if %i%==3 (set KMS_Sev=kms3.server&set KMS_Port=1688)
+if %i%==4 goto office_failed
+cscript ospp.vbs /sethst:%KMS_Sev% >nul
+cscript ospp.vbs /setprt:%KMS_Port% >nul
+echo.
+cscript ospp.vbs /act | find /i "success" >nul && cscript /nologo ospp.vbs /dstatus || (echo Activation failed! & echo Retrying... & set /a i+=1 & goto office_server)
+echo.
+echo [92m%office% activation successful.[0m
+goto office_done
+:office_notinstalled
+echo.
+echo [91mOffice is not installed on this computer.[0m
+goto office_done
+:office_failed
+echo [91mActivating %office% failed.[0m
+goto office_done
+:office_done
+echo.
+echo.
+echo.
+echo Activating Windows 10 ...
+cd /d %WinDIR%\System32
+cscript /nologo slmgr.vbs /xpr | findstr /i "permanently" >nul && goto windows_unnecessary
+set reg=HKLM\Software\Microsoft\Windows NT\CurrentVersion
+(for /f "tokens=2 delims=_" %%i in ('reg query %reg% /v "ProductName"^|find "REG"') do set os=%%i) >nul
+echo %os%|findstr /i "enterprise" >nul && goto windows_enterprise
+echo %os%|findstr /i "pro" >nul && goto windows_pro
+echo %os%|findstr /i "education" >nul && goto windows_education
+goto windows_unknown
+:windows_enterprise
+echo OS Name: Microsoft Windows 10 Enterprise
+cscript slmgr.vbs /ipk NPPR9-FWDCX-D2C8J-H872K-2YT43 >nul
+goto windows_activate
+:windows_pro
+echo OS Name: Microsoft Windows 10 Professional
+cscript slmgr.vbs /ipk W269N-WFGWX-YVC9B-4J6C9-T83GX >nul
+goto windows_activate
+:windows_education
+echo OS Name: Microsoft Windows 10 Education
+cscript slmgr.vbs /ipk NW6C2-QMPVW-D7KKK-3GKT6-VCFB2 >nul
+goto windows_activate
+:windows_activate
+set i=1
+:windows_server
+if %i%==1 (set KMS_Sev=kms1.server&set KMS_Port=1688)
+if %i%==2 (set KMS_Sev=kms2.server&set KMS_Port=1688)
+if %i%==3 (set KMS_Sev=kms3.server&set KMS_Port=1688)
+if %i%==4 goto windows_failed
+cscript slmgr.vbs /skms %KMS_Sev%:%KMS_Port% >nul
+echo.
+cscript slmgr.vbs /ato | findstr /i "success" >nul && cscript /nologo slmgr.vbs /dli || (echo Activation failed! & echo Retrying... & set /a i+=1 & goto windows_server)
+echo [92mWindows 10 activation successful.[0m
+goto windows_done
+:windows_unnecessary
+echo.
+echo [93mWindows 10 is already permanently activated.[0m
+goto windows_done
+:windows_unknown
+echo [91mUnknown Windows 10 edition.[0m
+goto windows_done
+:windows_failed
+echo [91mActivating Windows 10 failed.[0m
+goto windows_done
+:windows_done
+cd /d %ORIGINAL%
+echo.
+echo.
+echo.
+pause & start /b cmd /c del %~f0
+exit
