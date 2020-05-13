@@ -52,7 +52,7 @@ echo Activating Windows 10 ...
 cd /d %WinDIR%\System32
 cscript /nologo slmgr.vbs /xpr | findstr /i "permanently" >nul && goto windows_unnecessary
 set reg=HKLM\Software\Microsoft\Windows NT\CurrentVersion
-(for /f "tokens=2 delims=_" %%i in ('reg query %reg% /v "ProductName"^|find "REG"') do set os=%%i) >nul
+(for /f "tokens=2 delims=_" %%i in ('reg query "%reg%" /v "ProductName"^|find "REG"') do set os=%%i) >nul
 echo %os%|findstr /i "enterprise" >nul && goto windows_enterprise
 echo %os%|findstr /i "pro" >nul && goto windows_pro
 echo %os%|findstr /i "education" >nul && goto windows_education
