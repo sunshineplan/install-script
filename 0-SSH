@@ -1,10 +1,6 @@
 #! /bin/bash
 
 main(){
-    if ((EUID)); then
-        echo You must be root.
-        exit 100
-    fi
     while true
     do
         read -p 'Please enter new ssh port(default:22):' ssh_port
@@ -13,12 +9,14 @@ main(){
         echo Port number must be in the range from 1 to 65535!
     done
     read -p 'Please enter public key:' key
-    sed -i "/^#\?Port/s/.*/Port $ssh_port/" /etc/ssh/sshd_config
-    sudo service ssh restart
-    mkdir -p ~/.ssh
-    cat >> ~/.ssh/authorized_keys <<-EOF
+    sudo su <<-EOSU
+	sed -i "/^#\?Port/s/.*/Port $ssh_port/" /etc/ssh/sshd_config
+	service ssh restart
+	mkdir -p ~/.ssh
+	cat >> ~/.ssh/authorized_keys <<-EOF
 	$key
 	EOF
+	EOSU
 }
 
 main
