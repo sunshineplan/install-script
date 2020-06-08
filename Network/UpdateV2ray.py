@@ -11,7 +11,7 @@ from click import pause
 
 proxies = {'https': 'http://localhost:1080'}
 
-api = 'https://api.github.com/repos/v2ray/v2ray-core/releases/latest'
+api = 'https://api.github.com/repos/v2fly/v2ray-core/releases/latest'
 
 
 def getDownloadURL():
