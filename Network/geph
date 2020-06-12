@@ -79,7 +79,7 @@ getConfig() {
 }
 
 remoteStart() {
-    ssh $REMOTE_USER@$REMOTE "service $EXEC stop;sleep 1"
+    ssh $REMOTE_USER@$REMOTE "service $EXEC stop"
     if [ $? -ne 0 ]; then
         return $?
     fi
@@ -87,7 +87,7 @@ remoteStart() {
         scp -p ${DIR}geph $REMOTE_USER@$REMOTE:/usr/bin/$EXEC
     fi
     scp -p ${DIR}${CONFIG}.remote $REMOTE_USER@$REMOTE:${REMOTE_DIR}client.conf
-    ssh $REMOTE_USER@$REMOTE "chmod +x /usr/bin/$EXEC;service $EXEC start;sleep 1;rm ${REMOTE_DIR}client.conf"
+    ssh $REMOTE_USER@$REMOTE "sleep 1;chmod +x /usr/bin/$EXEC;service $EXEC start;sleep 1;rm ${REMOTE_DIR}client.conf"
     RETVAL=$?
     rm ${DIR}${CONFIG}.remote
     return $RETVAL

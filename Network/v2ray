@@ -62,7 +62,7 @@ remoteStart() {
     command=""
     scp -p ${DIR}${CONFIG}.remote $REMOTE_USER@$REMOTE:${REMOTE_DIR}config.json
     if [ $COPY_EXEC -eq 1 ]; then
-        command="bash ${REMOTE_DIR}install-release.sh -p localhost:9910;sleep 2;rm -rf ${REMOTE_DIR}install-release.sh /etc/v2ray /var/log/v2ray ${REMOTE_DIR}config.json"
+        command="bash ${REMOTE_DIR}install-release.sh -p localhost:9910"
     else
         command="service v2ray restart;sleep 2;rm -f ${REMOTE_DIR}config.json"
     fi
@@ -70,6 +70,10 @@ remoteStart() {
     RETVAL=$?
     if [ $RETVAL -eq 0 ]; then
         echo $NEW_VER >${DIR}v2ray_version
+    fi
+    if [ $COPY_EXEC -eq 1 ]; then
+        command="sleep 2;rm -rf ${REMOTE_DIR}install-release.sh /etc/v2ray /var/log/v2ray ${REMOTE_DIR}config.json"
+        ssh $REMOTE_USER@$REMOTE "$command"
     fi
     rm ${DIR}${CONFIG}.remote
     return $RETVAL
