@@ -7,7 +7,7 @@ REMOTE_USER="user"
 REMOTE_DIR="/home/"
 CONFIG="config.json"
 COPY_EXEC=1
-DOWNLOAD_URL="https://raw.githubusercontent.com/v2fly/v2ray-core/master/release/install-release.sh"
+DOWNLOAD_URL="https://raw.githubusercontent.com/v2fly/fhs-install-v2ray/master/install-release.sh"
 CUR_VER=""
 NEW_VER=""
 
@@ -62,7 +62,7 @@ remoteStart() {
     command=""
     scp -p ${DIR}${CONFIG}.remote $REMOTE_USER@$REMOTE:${REMOTE_DIR}config.json
     if [ $COPY_EXEC -eq 1 ]; then
-        command="bash ${REMOTE_DIR}install-release.sh -p localhost:9910"
+        command="bash ${REMOTE_DIR}install-release.sh -p socks5://localhost:9909"
     else
         command="service v2ray restart;sleep 2;rm -f ${REMOTE_DIR}config.json"
     fi

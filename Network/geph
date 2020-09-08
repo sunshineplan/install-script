@@ -60,13 +60,17 @@ getConfig() {
         echo "exitName = ch-gva-01.exits.geph.io" >>${DIR}${CONFIG}.remote
         echo "exitKey = c1b74b5d47286d97dd6a56ec574488775210ca7e44da506c011b17764660a34a" >>${DIR}${CONFIG}.remote
         ;;
-    hk)
-        echo "exitName = hk-hkg-01.exits.geph.io" >>${DIR}${CONFIG}.remote
-        echo "exitKey = 816802fd21f8689897c2abf33a95db23cc2a8d4f5cb996a29a3d85a4919c86b8" >>${DIR}${CONFIG}.remote
+    fi)
+        echo "exitName = fi-hel-01.exits.geph.io" >>${DIR}${CONFIG}.remote
+        echo "exitKey = 3cbdf1ada46e2fe0e2a1919990cec3c1e7d277ec7da99880ce7867004d791048" >>${DIR}${CONFIG}.remote
         ;;
     jp)
         echo "exitName = jp-tyo-01.exits.geph.io" >>${DIR}${CONFIG}.remote
         echo "exitKey = 107b64be61eef80a863362b84c7ebc730f81e903697c6e632f2908a62a60163d" >>${DIR}${CONFIG}.remote
+        ;;
+    tw)
+        echo "exitName = tw-tpe-01.exits.geph.io" >>${DIR}${CONFIG}.remote
+        echo "exitKey = 5644ca0ea161be432ceca53d5e228d1e2b4ee83222d7a35153a52ad499723439" >>${DIR}${CONFIG}.remote
         ;;
     sg)
         echo "exitName = sg-sgp-01.exits.geph.io" >>${DIR}${CONFIG}.remote
