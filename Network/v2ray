@@ -72,7 +72,7 @@ remoteStart() {
         echo $NEW_VER >${DIR}v2ray_version
     fi
     if [ $COPY_EXEC -eq 1 ]; then
-        command="sleep 2;rm -rf ${REMOTE_DIR}install-release.sh /etc/v2ray /var/log/v2ray ${REMOTE_DIR}config.json"
+        command="sleep 2;rm -rf ${REMOTE_DIR}install-release.sh /usr/local/etc/v2ray /var/log/v2ray ${REMOTE_DIR}config.json"
         ssh $REMOTE_USER@$REMOTE "$command"
     fi
     rm ${DIR}${CONFIG}.remote
