@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -24,15 +23,6 @@ var client = http.DefaultClient
 
 var tag, downloadURL string
 var process bool
-
-var pb *progressbar.ProgressBar
-
-type writeCounter struct{}
-
-func (wc *writeCounter) Write(p []byte) (int, error) {
-	pb.Add(len(p))
-	return 0, nil
-}
 
 func main() {
 	getDownloadURL()
@@ -110,15 +100,13 @@ func download() []byte {
 	if err != nil {
 		log.Fatal(err)
 	}
-	c := make(chan bool, 1)
-	pb = progressbar.New(total, c)
-	pb.Start()
+	pb := progressbar.New(total).SetUnit("bytes")
 	var out bytes.Buffer
-	if _, err := io.Copy(&out, io.TeeReader(resp.Body, &writeCounter{})); err != nil {
+	if _, err := pb.FromReader(resp.Body, &out); err != nil {
 		log.Fatal(err)
 	}
 	defer resp.Body.Close()
-	<-c
+	<-pb.Done
 	return out.Bytes()
 }
 
