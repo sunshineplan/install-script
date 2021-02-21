@@ -24,6 +24,7 @@ setupBash() {
 }
 
 installNftables() {
+    apt -qq update
     apt -qq -y install nftables ntp
     systemctl enable nftables
     service nftables start

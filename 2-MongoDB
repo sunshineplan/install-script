@@ -1,9 +1,9 @@
 #! /bin/bash
 
 installSoftware() {
-    curl https://www.mongodb.org/static/pgp/server-4.2.asc | apt-key add -
+    curl https://www.mongodb.org/static/pgp/server-4.4.asc | apt-key add -
     cat >>/etc/apt/sources.list.d/mongodb.list <<-EOF
-	deb http://repo.mongodb.org/apt/debian $(lsb_release -sc)/mongodb-org/4.2 main
+	deb http://repo.mongodb.org/apt/debian $(lsb_release -sc)/mongodb-org/4.4 main
 	EOF
     apt -qq update
     apt -qq -y install mongodb-org
