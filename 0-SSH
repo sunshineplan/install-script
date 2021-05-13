@@ -9,8 +9,11 @@ main(){
         echo Port number must be in the range from 1 to 65535!
     done
     read -p 'Please enter public key:' key
+    apt -qq update
+    apt -qq -y install sudo
     sudo su <<-EOSU
 	sed -i "/^#\?Port/s/.*/Port $ssh_port/" /etc/ssh/sshd_config
+	sed -i "/^PermitRootLogin/s/./#&/" /etc/ssh/sshd_config
 	service ssh restart
 	mkdir -p ~/.ssh
 	cat >> ~/.ssh/authorized_keys <<-EOF
