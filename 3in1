@@ -9,7 +9,7 @@ setupTimezone() {
 prepareInstall() {
     apt -qq update
 
-    cat >>/etc/apt/sources.list.d/$name.list <<-EOF
+    cat >>/etc/apt/sources.list.d/software.list <<-EOF
 	deb http://packages.amplify.nginx.com/debian/ $(lsb_release -sc) amplify-agent
 	deb http://repo.mongodb.org/apt/debian $(lsb_release -sc)/mongodb-org/4.4 main
 	EOF
