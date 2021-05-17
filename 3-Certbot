@@ -1,7 +1,7 @@
 #! /bin/bash
 
 installSoftware(){
-    apt -qq -y install certbot lexicon
+    apt -qq -y install certbot lexicon python3-bs4
 }
 
 writeConfigFile(){
@@ -9,7 +9,6 @@ writeConfigFile(){
 
 	authenticator = manual
 	manual-public-ip-logging-ok = True
-	server = https://acme-v02.api.letsencrypt.org/directory
 	preferred-challenges = dns
 	EOF
 }
@@ -21,19 +20,19 @@ writeAuthScript(){
 	set -euf -o pipefail
 
 	PROVIDER="$provider"
-	PROVIDER_CREDENTIALS="--auth-token=$api_key"
+	PROVIDER_CREDENTIALS="--auth-token=auth-token"
 	PROVIDER_UPDATE_DELAY=30
 
 	function auth {
-	    lexicon "\${PROVIDER}" "\${PROVIDER_CREDENTIALS}" \\
-	    create "\${CERTBOT_DOMAIN}" TXT --name "_acme-challenge.\${CERTBOT_DOMAIN}" --content "\${CERTBOT_VALIDATION}"
+	    lexicon \${PROVIDER} \${PROVIDER_CREDENTIALS} \\
+	    create \${CERTBOT_DOMAIN} TXT --name "_acme-challenge.\${CERTBOT_DOMAIN}" --content "\${CERTBOT_VALIDATION}"
 
-	    sleep "\${PROVIDER_UPDATE_DELAY}"
+	    sleep \${PROVIDER_UPDATE_DELAY}
 	}
 
 	function cleanup {
-	    lexicon "\${PROVIDER}" "\${PROVIDER_CREDENTIALS}" \\
-	    delete "\${CERTBOT_DOMAIN}" TXT --name "_acme-challenge.\${CERTBOT_DOMAIN}" --content "\${CERTBOT_VALIDATION}"
+	    lexicon \${PROVIDER} \${PROVIDER_CREDENTIALS} \\
+	    delete \${CERTBOT_DOMAIN} TXT --name "_acme-challenge.\${CERTBOT_DOMAIN}" --content "\${CERTBOT_VALIDATION}"
 	}
 
 	HANDLER=\$1; shift;
@@ -52,16 +51,16 @@ runCertbot(){
 main(){
     #read -p 'Please enter your domain:' domain
     read -p 'Please enter your domain provider:' provider
-    read -p 'Please enter your api key:' api_key
     script_name="lexicon-$provider"
     if [ -z "$provider" ]
     then
         script_name="lexicon"
     fi
-    installSoftware >/dev/null 2>&1
+    installSoftware
     writeConfigFile
     writeAuthScript
-    runCertbot >/dev/null 2>&1
+    runCertbot
+	echo Please fill auth info manually!
 }
 
 main

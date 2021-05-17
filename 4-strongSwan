@@ -67,7 +67,7 @@ writeSecretsFile(){
 
 main(){
     read -p 'Please enter domain:' domain
-    installSoftware >/dev/null 2>&1
+    installSoftware
     setupIPtables
     setupSysctl
     writeConfigFile

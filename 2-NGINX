@@ -7,6 +7,7 @@ installSoftware(){
     curl http://nginx.org/keys/nginx_signing.key|apt-key add -
     apt -qq update
     apt -qq -y install nginx nginx-amplify-agent
+	rm /etc/nginx/sites-enabled/default
 }
 
 setupAmplify(){
@@ -27,7 +28,7 @@ setupAmplify(){
 
 main(){
     read -p 'Please enter your amplify api key:' api_key
-    installSoftware >/dev/null 2>&1
+    installSoftware
     setupAmplify
 }
 
