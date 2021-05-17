@@ -1,0 +1,73 @@
+#! /bin/bash
+#Debian NGINX MongoDB
+
+setupTimezone() {
+    ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+    dpkg-reconfigure -f noninteractive tzdata
+}
+
+prepareInstall() {
+    apt -qq update
+
+    cat >>/etc/apt/sources.list.d/$name.list <<-EOF
+	deb http://packages.amplify.nginx.com/debian/ $(lsb_release -sc) amplify-agent
+	deb http://repo.mongodb.org/apt/debian $(lsb_release -sc)/mongodb-org/4.4 main
+	EOF
+
+    #NGINX
+    curl http://nginx.org/keys/nginx_signing.key | apt-key add -
+    #MongoDB
+    curl https://www.mongodb.org/static/pgp/server-4.4.asc | apt-key add -
+
+    read -p 'Please enter nginx amplify api key:' api_key
+}
+
+installSoftware() {
+    apt -qq update
+    apt -qq -y install nginx nginx-amplify-agent
+    rm /etc/nginx/sites-enabled/default
+}
+
+writeConfig() {
+    #System
+    cat >/etc/sysctl.d/90-bbr-sysctl.conf <<-EOF
+	net.core.default_qdisc=fq
+	net.ipv4.tcp_congestion_control=bbr
+	EOF
+
+    if ! $(grep -q HISTCONTROL ~/.bashrc); then
+        cat >>~/.bashrc <<-EOF
+
+		# don't put duplicate lines or lines starting with space in the history.
+		# See bash(1) for more options
+		HISTCONTROL=ignoreboth
+		EOF
+    fi
+
+    #NGINX
+    sed "s/api_key.*$/api_key = $api_key/" /etc/amplify-agent/agent.conf.default >/etc/amplify-agent/agent.conf
+    #sed -i 's/mysql = False/mysql = True/' /etc/amplify-agent/agent.conf
+    cat >/etc/nginx/conf.d/nginx_amplify.conf <<-EOF
+	server {
+	    server_name 127.0.0.1;
+	    location /nginx_status {
+	        stub_status on;
+	        allow 127.0.0.1;
+	        deny all;
+	        access_log off;
+	    }
+	}
+	EOF
+}
+
+main() {
+    STARTTIME=$(date +%s.%N)
+    setupTimezone
+    prepareInstall
+    installSoftware
+    writeConfig
+    ENDTIME=$(date +%s.%N)
+    echo All done! Duration for process: $(python -c "print(round(${ENDTIME}-${STARTTIME},3))") seconds
+}
+
+main
