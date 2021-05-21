@@ -6,12 +6,12 @@ installSoftware() {
 
 setupIPtables() {
     cat >/etc/ipsec.nft <<-EOF
-		table ipsec {
-		  chain postrouting {
-		    type nat hook postrouting priority 100;
-		    ip saddr 10.31.2.0/24 oif eth0 masquerade
-		  }
-		}
+	table ipsec {
+	    chain postrouting {
+	        type nat hook postrouting priority 100;
+	        ip saddr 10.31.2.0/24 oif eth0 masquerade
+	    }
+	}
 	EOF
     echo -e '\ninclude "/etc/ipsec.nft"\n' >>/etc/nftables.conf
     nft -f /etc/ipsec.nft
@@ -56,6 +56,35 @@ writeSecretsFile() {
 	EOF
 }
 
+configLog() {
+    mkdir -p /var/log/ipsec
+    cat >/etc/strongswan.d/logging.conf <<-EOF
+	charon {
+	    filelog {
+	        charon {
+	            path = /var/log/ipsec/access.log
+	            time_format = %b %e %T
+	            default = 0
+	        }
+	    }
+	}
+	EOF
+    cat >>/etc/apparmor.d/local/usr.lib.ipsec.charon <<-EOF
+	/var/log/ipsec/* rw,
+	EOF
+	cat >/etc/logrotate.d/ipsec <<-EOF
+	/var/log/ipsec/access.log {
+	    copytruncate
+	    rotate 12
+	    monthly
+	    compress
+	    delaycompress
+	    missingok
+	    notifempty
+	}
+	EOF
+}
+
 main() {
     read -p 'Please enter domain:' domain
     installSoftware
@@ -63,6 +92,7 @@ main() {
     setupSysctl
     writeConfigFile
     writeSecretsFile
+    configLog
     echo Please copy cert files and fill secrets info
 }
 
