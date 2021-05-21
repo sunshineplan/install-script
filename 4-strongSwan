@@ -1,39 +1,30 @@
 #! /bin/bash
 
-installSoftware(){
-    DEBIAN_FRONTEND=noninteractive apt -qq -y install strongswan libcharon-extra-plugins
+installSoftware() {
+    DEBIAN_FRONTEND=noninteractive apt -qq -y install nftables strongswan libcharon-extra-plugins
 }
 
-setupIPtables(){
-    iptables -t mangle -A FORWARD -o eth0 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1350
-    iptables -t nat -A POSTROUTING -s 10.31.2.0/24 -o eth0 -j MASQUERADE
-    F2B=""
-    if systemctl cat fail2ban >/dev/null 2>&1; then
-        service fail2ban stop
-        F2B=1
-    fi
-    if systemctl cat netfilter-persistent >/dev/null 2>&1; then
-        service netfilter-persistent save
-    else
-        echo iptables-persistent iptables-persistent/autosave_v4 boolean true|debconf-set-selections
-        echo iptables-persistent iptables-persistent/autosave_v6 boolean true|debconf-set-selections
-        apt -qq -y install iptables-persistent
-        echo RESET iptables-persistent/autosave_v4|debconf-communicate iptables-persistent
-        echo RESET iptables-persistent/autosave_v6|debconf-communicate iptables-persistent
-    fi
-    if [ "$F2B" = 1 ]; then
-        service fail2ban start
-    fi
+setupIPtables() {
+    cat >/etc/ipsec.nft <<-EOF
+		table ipsec {
+		  chain postrouting {
+		    type nat hook postrouting priority 100;
+		    ip saddr 10.31.2.0/24 oif eth0 masquerade
+		  }
+		}
+	EOF
+    echo -e '\ninclude "/etc/ipsec.nft"\n' >>/etc/nftables.conf
+    nft -f /etc/ipsec.nft
 }
 
-setupSysctl(){
-    echo 1 > /proc/sys/net/ipv4/ip_forward
-    cat > /etc/sysctl.d/90-vpn-sysctl.conf <<-EOF
+setupSysctl() {
+    echo 1 >/proc/sys/net/ipv4/ip_forward
+    cat >/etc/sysctl.d/90-vpn-sysctl.conf <<-EOF
 	net.ipv4.ip_forward=1
 	EOF
 }
 
-writeConfigFile(){
+writeConfigFile() {
     sed -i '/uniqueids/s/.*/\tuniqueids = no/' /etc/ipsec.conf
     sed -i "/# Add connections here./a\\
 \nconn %default\\
@@ -56,8 +47,8 @@ writeConfigFile(){
 \tleftid=$domain" /etc/ipsec.conf
 }
 
-writeSecretsFile(){
-   cat >> /etc/ipsec.secrets <<-EOF
+writeSecretsFile() {
+    cat >>/etc/ipsec.secrets <<-EOF
 
 	: RSA privkey.pem
 
@@ -65,14 +56,14 @@ writeSecretsFile(){
 	EOF
 }
 
-main(){
+main() {
     read -p 'Please enter domain:' domain
     installSoftware
     setupIPtables
     setupSysctl
     writeConfigFile
     writeSecretsFile
-    ipsec restart
+    echo Please copy cert files and fill secrets info
 }
 
 main
