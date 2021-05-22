@@ -25,7 +25,7 @@ setupSysctl() {
 }
 
 writeConfigFile() {
-    sed -i '/uniqueids/s/.*/\tuniqueids = no/' /etc/ipsec.conf
+    #sed -i '/uniqueids/s/.*/\tuniqueids = no/' /etc/ipsec.conf
     sed -i "/# Add connections here./a\\
 \nconn %default\\
 \tdpdaction=clear\\
@@ -39,11 +39,11 @@ writeConfigFile() {
 \tleftsubnet=0.0.0.0/0\\
 \trightsourceip=10.31.2.0/24\\
 \trightdns=8.8.8.8,8.8.4.4\\
+\trightauth=eap-mschapv2\\
 \teap_identity=%identity\\
-\nconn ikev2-mschapv2\\
-\trightauth=eap-mschapv2\\
-\nconn ikev2-mschapv2-apple\\
-\trightauth=eap-mschapv2\\
+\nconn windows\\
+\tike=aes256-sha1-modp1024!
+\nconn mobile\\
 \tleftid=$domain" /etc/ipsec.conf
 }
 
@@ -64,19 +64,21 @@ configLog() {
 	        charon {
 	            path = /var/log/ipsec/access.log
 	            time_format = %b %e %T
+	            ike_name = yes
+	            flush_line = yes
 	            default = 0
 	        }
 	    }
 	}
 	EOF
     cat >>/etc/apparmor.d/local/usr.lib.ipsec.charon <<-EOF
-	/var/log/ipsec/* rw,
+	/var/log/ipsec/* w,
 	EOF
 	cat >/etc/logrotate.d/ipsec <<-EOF
 	/var/log/ipsec/access.log {
 	    copytruncate
 	    rotate 12
-	    monthly
+	    weekly
 	    compress
 	    delaycompress
 	    missingok
