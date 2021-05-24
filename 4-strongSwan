@@ -62,7 +62,7 @@ configLog() {
 	charon {
 	    filelog {
 	        charon {
-	            path = /var/log/ipsec/access.log
+	            path = /var/log/ipsec/ipsec.log
 	            time_format = %b %e %T
 	            ike_name = yes
 	            flush_line = yes
@@ -74,7 +74,7 @@ configLog() {
 	}
 	EOF
     cat >/etc/logrotate.d/ipsec <<-EOF
-	/var/log/ipsec/access.log {
+	/var/log/ipsec/ipsec.log {
 	    copytruncate
 	    rotate 12
 	    weekly
