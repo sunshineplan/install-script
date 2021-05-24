@@ -73,10 +73,7 @@ configLog() {
 	    }
 	}
 	EOF
-    cat >>/etc/apparmor.d/local/usr.lib.ipsec.charon <<-EOF
-	/var/log/ipsec/* w,
-	EOF
-	cat >/etc/logrotate.d/ipsec <<-EOF
+    cat >/etc/logrotate.d/ipsec <<-EOF
 	/var/log/ipsec/access.log {
 	    copytruncate
 	    rotate 12
@@ -87,6 +84,10 @@ configLog() {
 	    notifempty
 	}
 	EOF
+    cat >>/etc/apparmor.d/local/usr.lib.ipsec.charon <<-EOF
+	/var/log/ipsec/* w,
+	EOF
+    service apparmor reload
 }
 
 main() {
