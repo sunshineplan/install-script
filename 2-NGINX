@@ -30,6 +30,7 @@ main(){
     read -p 'Please enter your amplify api key:' api_key
     installSoftware
     setupAmplify
+	echo Please copy conf files
 }
 
 main
