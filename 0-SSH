@@ -1,6 +1,6 @@
 #! /bin/bash
 
-main(){
+main() {
     while true
     do
         read -p 'Please enter new ssh port(default:22):' ssh_port

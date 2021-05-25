@@ -1,6 +1,6 @@
 #! /bin/bash
 
-installSoftware(){
+installSoftware() {
     apt -qq -y install dirmngr
     apt-key adv --recv-keys --keyserver keyserver.ubuntu.com 0xF1656F24C74CD1D8
     cat >> /etc/apt/sources.list.d/mariadb.list <<-EOF
@@ -11,13 +11,13 @@ installSoftware(){
     apt -qq -y install mariadb-server
 }
 
-setPassword(){
+setPassword() {
     Q1="SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$db_pass');"
     SQL="${Q1}"
     mysql -e "$SQL"
 }
 
-writeConfig(){
+writeConfig() {
    cat > /etc/mysql/mariadb.conf.d/98-vps.cnf <<-EOF
 	[mysqld]
 
@@ -27,7 +27,7 @@ writeConfig(){
 	EOF
 }
 
-main(){
+main() {
     read -p 'Please enter MariaDB version:' ver
     while true
     do

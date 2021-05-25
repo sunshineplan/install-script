@@ -1,5 +1,11 @@
 #! /bin/bash
-#Debian NGINX MongoDB
+#SSH Debian NGINX MongoDB
+
+setupSSH() {
+    sed -i "/^#\?Port/s/.*/Port $ssh_port/" /etc/ssh/sshd_config
+    sed -i "/^PermitRootLogin/s/./#&/" /etc/ssh/sshd_config
+    service ssh restart
+}
 
 setupTimezone() {
     ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
@@ -8,6 +14,7 @@ setupTimezone() {
 
 prepareInstall() {
     apt -qq update
+    apt -qq -y install curl
 
     cat >>/etc/apt/sources.list.d/software.list <<-EOF
 	deb http://packages.amplify.nginx.com/debian/ $(lsb_release -sc) amplify-agent
@@ -24,7 +31,9 @@ prepareInstall() {
 
 installSoftware() {
     apt -qq update
-    apt -qq -y install nginx nginx-amplify-agent
+    apt -qq -y install nginx nginx-amplify-agent nftables ntp
+    systemctl enable nftables
+    service nftables start
     rm /etc/nginx/sites-enabled/default
 }
 
@@ -62,6 +71,7 @@ writeConfig() {
 
 main() {
     STARTTIME=$(date +%s.%N)
+    setupSSH
     setupTimezone
     prepareInstall
     installSoftware

@@ -1,10 +1,10 @@
 #! /bin/bash
 
-installSoftware(){
+installSoftware() {
     apt -qq -y install certbot lexicon python3-bs4
 }
 
-writeConfigFile(){
+writeConfigFile() {
     cat >> /etc/letsencrypt/cli.ini <<-EOF
 
 	authenticator = manual
@@ -13,7 +13,7 @@ writeConfigFile(){
 	EOF
 }
 
-writeAuthScript(){
+writeAuthScript() {
     cat > /etc/letsencrypt/$script_name <<-EOF
 	#!/usr/bin/env bash
 
@@ -43,12 +43,12 @@ writeAuthScript(){
     chmod +x /etc/letsencrypt/$script_name
 }
 
-runCertbot(){
+runCertbot() {
     certbot register --agree-tos --no-eff-email --register-unsafely-without-email
     #certbot certonly --cert-name $cert-name -d $domain,*.$domain --manual-auth-hook "/etc/letsencrypt/$script_name auth" --manual-cleanup-hook "/etc/letsencrypt/$script_name cleanup"
 }
 
-main(){
+main() {
     #read -p 'Please enter your domain:' domain
     read -p 'Please enter your domain provider:' provider
     script_name="lexicon-$provider"

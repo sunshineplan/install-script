@@ -1,13 +1,13 @@
 #! /bin/bash
 
-installSoftware(){
+installSoftware() {
     apt -qq -y install nginx php$ver-fpm php$ver-mysql
     mkdir -p /var/www
     curl -o- https://wordpress.org/latest.tar.gz | tar zxC /var/www
     chown -R www-data:www-data /var/www/wordpress
 }
 
-configMySQL(){
+configMySQL() {
     Q1="DROP DATABASE IF EXISTS $database_name;"
     Q2="CREATE DATABASE $database_name;"
     Q3="GRANT ALL PRIVILEGES ON $database_name.* TO '$username'@'localhost' IDENTIFIED BY '$password';"
@@ -15,7 +15,7 @@ configMySQL(){
     mysql -p$db_pass -e "$SQL"
 }
 
-writeConfig(){
+writeConfig() {
     cp /var/www/wordpress/wp-config-sample.php /var/www/wordpress/wp-config.php
     sed "s/database_name_here/$database_name/" -i /var/www/wordpress/wp-config.php
     sed "s/username_here/$username/" -i /var/www/wordpress/wp-config.php
@@ -51,7 +51,7 @@ writeConfig(){
 	EOF
 }
 
-main(){
+main() {
     read -p 'Please enter your domain:' domain
     read -p 'Please enter php version:' ver
     read -p 'Please enter local database password:' db_pass

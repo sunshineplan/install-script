@@ -1,6 +1,6 @@
 #! /bin/bash
 
-installSoftware(){
+installSoftware() {
     cat >> /etc/apt/sources.list.d/nginx.list <<-EOF
 	deb http://packages.amplify.nginx.com/debian/ $(lsb_release -sc) amplify-agent
 	EOF
@@ -10,7 +10,7 @@ installSoftware(){
 	rm /etc/nginx/sites-enabled/default
 }
 
-setupAmplify(){
+setupAmplify() {
     sed "s/api_key.*$/api_key = $api_key/" /etc/amplify-agent/agent.conf.default > /etc/amplify-agent/agent.conf
     #sed -i 's/mysql = False/mysql = True/' /etc/amplify-agent/agent.conf
     cat > /etc/nginx/conf.d/nginx_amplify.conf <<-EOF
@@ -26,7 +26,7 @@ setupAmplify(){
 	EOF
 }
 
-main(){
+main() {
     read -p 'Please enter your amplify api key:' api_key
     installSoftware
     setupAmplify
