@@ -1,0 +1,38 @@
+#! /bin/bash
+
+install() {
+    brew install geph4
+}
+
+setupLaunchd() {
+    cat >~/Library/LaunchAgents/geph.plist <<-EOF
+	<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+	<plist version="1.0">
+	  <dict>
+	    <key>KeepAlive</key>
+	    <true/>
+	    <key>RunAtLoad</key>
+	    <true/>
+	    <key>Label</key>
+	    <string>geph</string>
+	    <key>ProgramArguments</key>
+	    <array>
+	      <string>/usr/local/bin/geph4-client</string>
+	      <string>connect --exit-server $server --username $username --password $password</string>
+	    </array>
+	  </dict>
+	</plist>
+	EOF
+}
+
+main() {
+    read -p 'Please enter username:' username
+    read -p 'Please enter password:' password
+    read -p 'Please enter exit-server:' server
+    install
+    setupLaunchd
+    launchctl load ~/Library/LaunchAgents/geph.plist
+}
+
+main
