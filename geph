@@ -5,7 +5,7 @@ install() {
 }
 
 setupLaunchd() {
-    cat >~/Library/LaunchAgents/geph.plist <<-EOF
+    cat > ~/Library/LaunchAgents/geph.plist <<-EOF
 	<?xml version="1.0" encoding="UTF-8"?>
 	<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 	<plist version="1.0">
@@ -19,7 +19,13 @@ setupLaunchd() {
 	    <key>ProgramArguments</key>
 	    <array>
 	      <string>/usr/local/bin/geph4-client</string>
-	      <string>connect --exit-server $server --username $username --password $password</string>
+	      <string>connect</string>
+	      <string>--username</string>
+	      <string>$username</string>
+	      <string>--password</string>
+	      <string>$password</string>
+	      <string>--exit-server</string>
+	      <string>$server</string>
 	    </array>
 	  </dict>
 	</plist>
@@ -33,6 +39,7 @@ main() {
     install
     setupLaunchd
     launchctl load ~/Library/LaunchAgents/geph.plist
+    launchctl start ~/Library/LaunchAgents/geph.plist
 }
 
 main
