@@ -39,7 +39,7 @@ main() {
     install
     setupLaunchd
     launchctl load ~/Library/LaunchAgents/geph.plist
-    launchctl start ~/Library/LaunchAgents/geph.plist
+    launchctl start geph
 }
 
 main
