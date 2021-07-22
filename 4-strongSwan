@@ -9,7 +9,13 @@ setupIPtables() {
 	table ipsec {
 	    chain postrouting {
 	        type nat hook postrouting priority 100;
-	        ip saddr 10.31.2.0/24 oif eth0 masquerade
+	        ip saddr 10.31.0.0/16 oif eth0 masquerade
+	    }
+
+	    chain prerouting {
+	        type nat hook prerouting priority 100;
+	        ip protocol tcp ip saddr 10.31.3.0/24 redirect to 12345
+			ip protocol udp ip saddr 10.31.3.0/24 redirect to 12345
 	    }
 	}
 	EOF
