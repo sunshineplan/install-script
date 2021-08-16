@@ -6,7 +6,7 @@ installSoftware() {
 
 setupIPtables() {
     cat >/etc/ipsec.nft <<-EOF
-	table ipsec {
+	table strongswan {
 	    chain postrouting {
 	        type nat hook postrouting priority 100;
 	        ip saddr 10.31.0.0/16 oif eth0 masquerade

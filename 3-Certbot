@@ -8,7 +8,6 @@ writeConfigFile() {
     cat >> /etc/letsencrypt/cli.ini <<-EOF
 
 	authenticator = manual
-	manual-public-ip-logging-ok = True
 	preferred-challenges = dns
 	EOF
 }
