@@ -12,12 +12,14 @@ main() {
     apt -qq update
     apt -qq -y install sudo
     sudo su <<-EOSU
-	sed -i "/^#\?Port/s/.*/Port $ssh_port/" /etc/ssh/sshd_config
-	sed -i "/^PermitRootLogin/s/./#&/" /etc/ssh/sshd_config
+ 	cat >/etc/ssh/sshd_config.d/sshd.conf <<-EOF
+		Port $ssh_port
+		PermitRootLogin prohibit-password
+	EOF
 	service ssh restart
 	mkdir -p ~/.ssh
 	cat >> ~/.ssh/authorized_keys <<-EOF
-	$key
+		$key
 	EOF
 	EOSU
 }
