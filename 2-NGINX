@@ -1,13 +1,11 @@
 #! /bin/bash
 
 installSoftware() {
-    cat >> /etc/apt/sources.list.d/nginx.list <<-EOF
-	deb http://packages.amplify.nginx.com/debian/ $(lsb_release -sc) amplify-agent
-	EOF
-    curl http://nginx.org/keys/nginx_signing.key|apt-key add -
     apt -qq update
-    apt -qq -y install nginx nginx-amplify-agent
-	rm /etc/nginx/sites-enabled/default
+    apt -qq -y install nginx
+    rm /etc/nginx/sites-enabled/default
+    curl -Lo amplify-agent.deb http://packages.amplify.nginx.com/debian/pool/amplify-agent/n/nginx-amplify-agent/nginx-amplify-agent_1.7.0-5~buster_amd64.deb
+    dpkg -i amplify-agent.deb && rm amplify-agent.deb
 }
 
 setupAmplify() {
@@ -30,7 +28,7 @@ main() {
     read -p 'Please enter your amplify api key:' api_key
     installSoftware
     setupAmplify
-	echo Please copy conf files
+    echo Please copy nginx conf files
 }
 
 main
