@@ -17,13 +17,8 @@ prepareInstall() {
     apt -qq -y install curl
 
     cat >>/etc/apt/sources.list.d/software.list <<-EOF
-	deb http://packages.amplify.nginx.com/debian/ $(lsb_release -sc) amplify-agent
 	deb http://repo.mongodb.org/apt/debian $(lsb_release -sc)/mongodb-org/4.4 main
 	EOF
-
-    #NGINX
-    curl http://nginx.org/keys/nginx_signing.key | apt-key add -
-    #MongoDB
     curl https://www.mongodb.org/static/pgp/server-4.4.asc | apt-key add -
 
     read -p 'Please enter nginx amplify api key:' api_key
@@ -31,10 +26,11 @@ prepareInstall() {
 
 installSoftware() {
     apt -qq update
-    apt -qq -y install nginx nginx-amplify-agent nftables ntp
+    apt -qq -y install nginx nftables ntp
     systemctl enable nftables
-    service nftables start
     rm /etc/nginx/sites-enabled/default
+    curl -Lo amplify-agent.deb http://packages.amplify.nginx.com/debian/pool/amplify-agent/n/nginx-amplify-agent/nginx-amplify-agent_1.7.0-5~buster_amd64.deb
+    dpkg -i amplify-agent.deb && rm amplify-agent.deb
 }
 
 writeConfig() {
