@@ -1,0 +1,16 @@
+#! /bin/bash
+
+installSoftware() {
+    apt -qq -y install chasquid acl
+	mkdir -p /etc/chasquid/domains/$domain
+    touch /etc/chasquid/domains/$domain/users
+	mkdir -p /etc/chasquid/certs/mx.$domain
+}
+
+main() {
+    read -p 'Please enter domain:' domain
+    installSoftware
+    echo Please link cert files and add user(chasquid-util user-add)
+}
+
+main
