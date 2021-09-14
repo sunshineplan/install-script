@@ -1,10 +1,26 @@
 #! /bin/bash
 
 installSoftware() {
-    apt -qq -y install chasquid acl
-	mkdir -p /etc/chasquid/domains/$domain
-    touch /etc/chasquid/domains/$domain/users
-	mkdir -p /etc/chasquid/certs/mx.$domain
+    apt -qq -y install chasquid
+    mkdir -p /etc/chasquid/certs/mx.$domain
+    mv /etc/chasquid/chasquid.conf /etc/chasquid/chasquid.conf.default
+    cat > /etc/chasquid/chasquid.conf <<-EOF
+	hostname: "mx.$domain"
+	mail_log_path: "/var/log/chasquid/chasquid.log"
+	EOF
+    mkdir -p /var/log/chasquid
+    chown -R chasquid:chasquid /var/log/chasquid
+    cat >/etc/logrotate.d/chasquid <<-EOF
+	/var/log/chasquid/chasquid.log {
+	    copytruncate
+	    rotate 12
+	    weekly
+	    compress
+	    delaycompress
+	    missingok
+	    notifempty
+	}
+	EOF
 }
 
 main() {
