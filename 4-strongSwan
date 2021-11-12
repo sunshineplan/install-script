@@ -14,8 +14,8 @@ setupIPtables() {
 
 	    chain prerouting {
 	        type nat hook prerouting priority 100;
-	        ip protocol tcp ip saddr 10.31.3.0/24 redirect to 12345
-	        ip protocol udp ip saddr 10.31.3.0/24 redirect to 12345
+	        ip protocol tcp ip saddr 10.31.3.0/24 tproxy to :12345
+	        ip protocol udp ip saddr 10.31.3.0/24 tproxy to :12345
 	    }
 	}
 	EOF
