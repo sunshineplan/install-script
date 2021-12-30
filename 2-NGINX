@@ -2,10 +2,14 @@
 
 installSoftware() {
     apt -qq update
-    apt -qq -y install nginx
+    apt -qq -y install nginx gnupg2
     rm /etc/nginx/sites-enabled/default
-    curl -Lo amplify-agent.deb http://packages.amplify.nginx.com/debian/pool/amplify-agent/n/nginx-amplify-agent/nginx-amplify-agent_1.7.0-5~buster_amd64.deb
-    dpkg -i amplify-agent.deb && rm amplify-agent.deb
+    curl http://nginx.org/keys/nginx_signing.key | apt-key add -
+    cat >> /etc/apt/sources.list.d/nginx.list <<-EOF
+	deb http://packages.amplify.nginx.com/py3/debian/ $(lsb_release -sc) amplify-agent
+	EOF
+    apt -qq update
+    apt -qq -y install nginx-amplify-agent
 }
 
 setupAmplify() {
