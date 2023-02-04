@@ -16,7 +16,7 @@ main() {
 	    <string>geph</string>
 	    <key>ProgramArguments</key>
 	    <array>
-	      <string>/usr/local/bin/geph4-client</string>
+	      <string>/opt/homebrew/bin/geph4-client</string>
 	      <string>connect</string>
 	      <string>--username</string>
 	      <string>$username</string>
