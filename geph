@@ -18,12 +18,13 @@ main() {
 	    <array>
 	      <string>/opt/homebrew/bin/geph4-client</string>
 	      <string>connect</string>
+	      <string>--exit-server</string>
+	      <string>$server</string>
+	      <string>auth-password</string>
 	      <string>--username</string>
 	      <string>$username</string>
 	      <string>--password</string>
 	      <string>$password</string>
-	      <string>--exit-server</string>
-	      <string>$server</string>
 	    </array>
 	  </dict>
 	</plist>
