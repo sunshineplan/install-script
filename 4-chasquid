@@ -6,12 +6,14 @@ installSoftware() {
     mv /etc/chasquid/chasquid.conf /etc/chasquid/chasquid.conf.default
     cat > /etc/chasquid/chasquid.conf <<-EOF
 	hostname: "mx.$domain"
-	mail_log_path: "/var/log/chasquid/chasquid.log"
+	mail_log_path: "/var/log/chasquid/mail.log"
 	EOF
+	sed -i '\|^ExecStart=|s|$| -logfile /var/log/chasquid/chasquid.log|' /usr/lib/systemd/system/chasquid.service
+	systemctl daemon-reload
     mkdir -p /var/log/chasquid
     chown -R chasquid:chasquid /var/log/chasquid
     cat >/etc/logrotate.d/chasquid <<-EOF
-	/var/log/chasquid/chasquid.log {
+	/var/log/chasquid/*.log {
 	    copytruncate
 	    rotate 12
 	    weekly
