@@ -4,14 +4,6 @@ installSoftware() {
     apt -qq -y install certbot lexicon python3-bs4
 }
 
-writeConfigFile() {
-    cat >> /etc/letsencrypt/cli.ini <<-EOF
-
-	authenticator = manual
-	preferred-challenges = dns
-	EOF
-}
-
 writeAuthScript() {
     cat > /etc/letsencrypt/$script_name <<-EOF
 	#!/usr/bin/env bash
@@ -44,7 +36,7 @@ writeAuthScript() {
 
 runCertbot() {
     certbot register --agree-tos --no-eff-email --register-unsafely-without-email
-    #certbot certonly --cert-name $cert-name -d $domain,*.$domain --manual-auth-hook "/etc/letsencrypt/$script_name auth" --manual-cleanup-hook "/etc/letsencrypt/$script_name cleanup"
+    #certbot certonly --cert-name $cert-name -d $domain,*.$domain --manual --preferred-challenges=dns --manual-auth-hook "/etc/letsencrypt/$script_name auth" --manual-cleanup-hook "/etc/letsencrypt/$script_name cleanup"
 }
 
 main() {
@@ -56,7 +48,6 @@ main() {
         script_name="lexicon"
     fi
     installSoftware
-    writeConfigFile
     writeAuthScript
     runCertbot
 	echo Please fill auth info manually!
