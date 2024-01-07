@@ -4,7 +4,7 @@ installSoftware() {
     apt -qq update
     apt -qq -y install nginx gnupg2
     rm /etc/nginx/sites-enabled/default
-    curl http://nginx.org/keys/nginx_signing.key | apt-key add -
+    curl http://nginx.org/keys/nginx_signing.key | gpg -o /etc/apt/trusted.gpg.d/nginx.gpg --dearmor
     cat >> /etc/apt/sources.list.d/nginx.list <<-EOF
 	deb http://packages.amplify.nginx.com/py3/debian/ $(lsb_release -sc) amplify-agent
 	EOF
