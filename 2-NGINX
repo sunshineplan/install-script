@@ -2,19 +2,21 @@
 
 installSoftware() {
     apt -qq update
-    apt -qq -y install nginx gnupg2
+    apt -qq -y install nginx
     rm /etc/nginx/sites-enabled/default
-    curl http://nginx.org/keys/nginx_signing.key | gpg -o /etc/apt/trusted.gpg.d/nginx.gpg --dearmor
-    cat >> /etc/apt/sources.list.d/nginx.list <<-EOF
-	deb http://packages.amplify.nginx.com/py3/debian/ $(lsb_release -sc) amplify-agent
-	EOF
-    apt -qq update
-    apt -qq -y install nginx-amplify-agent
+    if [ -n "$api_key" ]; then
+        apt -qq -y install gnupg2
+        curl http://nginx.org/keys/nginx_signing.key | gpg -o /etc/apt/trusted.gpg.d/nginx.gpg --dearmor
+        cat >> /etc/apt/sources.list.d/nginx.list <<-EOF
+		deb http://packages.amplify.nginx.com/py3/debian/ $(lsb_release -sc) amplify-agent
+		EOF
+        apt -qq update
+        apt -qq -y install nginx-amplify-agent
+    fi
 }
 
 setupAmplify() {
     sed "s/api_key.*$/api_key = $api_key/" /etc/amplify-agent/agent.conf.default > /etc/amplify-agent/agent.conf
-    #sed -i 's/mysql = False/mysql = True/' /etc/amplify-agent/agent.conf
     cat > /etc/nginx/conf.d/nginx_amplify.conf <<-EOF
 	server {
 	    server_name 127.0.0.1;
@@ -31,8 +33,10 @@ setupAmplify() {
 main() {
     read -p 'Please enter your amplify api key:' api_key
     installSoftware
-    setupAmplify
-    echo Please copy nginx conf files
+    if [ -n "$api_key" ]; then
+        setupAmplify
+    fi
+    echo 'Please copy nginx conf files'
 }
 
 main
