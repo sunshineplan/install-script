@@ -6,7 +6,7 @@ echo =====================================
 echo Activating MS Products
 echo =====================================
 rem https://docs.microsoft.com/en-us/deployoffice/vlactivation/gvlks
-rem https://technet.microsoft.com/en-us/library/jj612867.aspx
+rem https://learn.microsoft.com/en-us/windows-server/get-started/kms-client-activation-keys
 rem https://github.com/Wind4/vlmcsd/tree/gh-pages
 echo.
 echo Activating Office ...
