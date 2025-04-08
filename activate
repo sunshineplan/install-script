@@ -16,21 +16,19 @@ if not exist ospp.vbs goto office_notinstalled
 cscript ospp.vbs /inpkey:XQNVK-8JYDB-WJ9W3-YJ8YR-WFG99 | find /i "success" >nul && goto office_2016 || goto office_2024
 :office_2016
 set office=Office 2016
-echo Product Name: Office 2016
 goto office_activate
 :office_2024
 set office=Office 2024
-echo Product Name: Office 2024
 for /f %%i in ('dir /b ..\root\Licenses16\ProPlus2024VL*.xrm-ms') do cscript ospp.vbs /inslic:"..\root\Licenses16\%%i" >nul
 cscript ospp.vbs /inpkey:XJ2XN-FW8RK-P4HMP-DKDBV-GCVGB | find /i "success" >nul || goto office_2021
 goto office_activate
 :office_2021
 set office=Office 2021
-echo Product Name: Office 2021
 for /f %%i in ('dir /b ..\root\Licenses16\ProPlus2021VL*.xrm-ms') do cscript ospp.vbs /inslic:"..\root\Licenses16\%%i" >nul
 cscript ospp.vbs /inpkey:FXYTK-NJJ8C-GB6DW-3DYQT-6F7TH | find /i "success" >nul || goto office_failed
 goto office_activate
 :office_activate
+echo Product Name: %office%
 set i=1
 :office_server
 if %i%==1 (set KMS_Sev=kms1.server&set KMS_Port=1688)
