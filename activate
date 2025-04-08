@@ -22,7 +22,7 @@ goto office_activate
 set office=Office 2024
 echo Product Name: Office 2024
 for /f %%i in ('dir /b ..\root\Licenses16\ProPlus2024VL*.xrm-ms') do cscript ospp.vbs /inslic:"..\root\Licenses16\%%i" >nul
-cscript ospp.vbs /inpkey:XJ2XN-FW8RK-P4HMP-DKDBV-GCVGB | find /i "success" >nul || goto office_failed
+cscript ospp.vbs /inpkey:XJ2XN-FW8RK-P4HMP-DKDBV-GCVGB | find /i "success" >nul || goto office_2021
 goto office_activate
 :office_2021
 set office=Office 2021
