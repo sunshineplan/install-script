@@ -16,10 +16,8 @@ prepareInstall() {
     apt -qq update
     apt -qq -y install curl
 
-    cat >>/etc/apt/sources.list.d/software.list <<-EOF
-	deb http://repo.mongodb.org/apt/debian $(lsb_release -sc)/mongodb-org/4.4 main
-	EOF
-    curl https://www.mongodb.org/static/pgp/server-4.4.asc | apt-key add -
+    echo "deb [signed-by=/usr/share/keyrings/mongodb-8.0.gpg] http://repo.mongodb.org/apt/debian $(lsb_release -sc)/mongodb-org/8.0 main" | tee -a /etc/apt/sources.list.d/software.list > /dev/null
+    curl https://pgp.mongodb.com/server-8.0.asc | gpg -o /usr/share/keyrings/mongodb-8.0.gpg --dearmor
 
     read -p 'Please enter nginx amplify api key:' api_key
 }
