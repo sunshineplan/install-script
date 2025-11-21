@@ -23,18 +23,20 @@ setupBash() {
     fi
 }
 
-installNftables() {
+installSoftware() {
     apt -qq update
     apt -qq -y install nftables ntp
     systemctl enable nftables
     service nftables start
+    apt -qq -y install nginx
+    rm /etc/nginx/sites-enabled/default
 }
 
 main() {
     setupTimezone
     setupSysctl
     setupBash
-    installNftables
+    installSoftware
 }
 
 main
