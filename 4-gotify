@@ -1,0 +1,94 @@
+#! /bin/bash
+
+INSTALL_PATH=/etc/gotify
+SOCKET=unix:/run/gotify.sock
+
+installGotify() {
+    TMP=$(mktemp)
+    curl -Lo $TMP https://github.com/gotify/server/releases/latest/download/gotify-linux-amd64.zip
+    mkdir -p $INSTALL_PATH
+    unzip $TMP -d $INSTALL_PATH
+    rm $TMP
+    mv $INSTALL_PATH/gotify-linux-amd64 $INSTALL_PATH/gotify
+    chmod +x $INSTALL_PATH/gotify
+}
+
+configGotify() {
+    curl -Lo $INSTALL_PATH/config.yml https://raw.githubusercontent.com/gotify/server/master/config.example.yml
+    sed -i "0,/listenaddr: \"[^\"]*\"/s##listenaddr: \"$SOCKET\"#" $INSTALL_PATH/config.yml
+    cat >/etc/systemd/system/gotify.service <<-EOF
+		[Unit]
+		Description=Gotify
+		Requires=network.target
+		After=network.target
+
+		[Service]
+		Type=simple
+		User=root
+		WorkingDirectory=$INSTALL_PATH
+		ExecStart=$INSTALL_PATH/gotify
+		StandardOutput=append:/var/log/app/gotify.log
+		StandardError=append:/var/log/app/gotify-error.log
+		Restart=always
+		RestartSec=3
+
+		[Install]
+		WantedBy=multi-user.target
+		EOF
+    systemctl enable gotify
+    service gotify start
+}
+
+writeLogrotateScrip() {
+    if [ ! -f '/etc/logrotate.d/app' ]; then
+    cat >/etc/logrotate.d/app <<-EOF
+		/var/log/app/*.log {
+		    copytruncate
+		    rotate 12
+		    compress
+		    delaycompress
+		    missingok
+		    notifempty
+		}
+		EOF
+    fi
+}
+
+setupNGINX() {
+    read -p 'Please enter domain:' domain
+    cat >/etc/systemd/system/gotify.service <<-EOF
+		server {
+		    listen 80;
+		    listen 443 ssl;
+		    server_name $domain;
+		
+		    #ssl_certificate fullchain.pem;
+		    #ssl_certificate_key privkey.pem;
+		
+		    access_log /var/log/nginx/gotify.log;
+		
+		    location / {
+		        include proxy_params;
+		        proxy_http_version 1.1;
+		        proxy_set_header   Upgrade \$http_upgrade;
+		        proxy_set_header   Connection "upgrade";
+		        proxy_pass http://$SOCKET:/;
+		    }
+		
+		    if (\$scheme != "https") {
+		        return 301 https://\$host\$request_uri;
+		    }
+		}
+		EOF
+    service nginx reload
+}
+
+main() {
+    installGotify
+    configGotify
+    configMyStocks
+    writeLogrotateScrip
+    setupNGINX
+}
+
+main
