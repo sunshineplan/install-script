@@ -1,7 +1,9 @@
 #! /bin/bash
 
 installSoftware() {
-    apt -qq -y install certbot lexicon python3-bs4
+    apt -qq -y install snapd lexicon python3-bs4
+    snap install --classic certbot
+    ln -s /snap/bin/certbot /usr/local/bin/certbot
 }
 
 writeAuthScript() {
